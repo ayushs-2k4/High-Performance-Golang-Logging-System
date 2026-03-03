@@ -5,9 +5,15 @@ import (
 	"os"
 )
 
+type Buffer struct {
+	b []byte
+}
+
 func main() {
 	fileName := "my-file.txt"
-	writeToFile(fileName, []byte("Devansh Singhal"))
+	for i := 0; i < 10; i++ {
+		writeToFile(fileName, Buffer{b: []byte("\nDevansh Singhal")})
+	}
 }
 
 func createFileIfNotExists(filename string) (*os.File, error) {
@@ -19,14 +25,14 @@ func createFileIfNotExists(filename string) (*os.File, error) {
 	return file, nil
 }
 
-func writeToFile(filename string, b []byte) (bool, error) {
+func writeToFile(filename string, buffer Buffer) (bool, error) {
 	file, err := createFileIfNotExists(filename)
 	if err != nil || file == nil {
 		return false, err
 	}
 	defer file.Close()
 
-	n, err := file.Write(b)
+	n, err := file.Write(buffer.b)
 	if err != nil {
 		return false, err
 	}
