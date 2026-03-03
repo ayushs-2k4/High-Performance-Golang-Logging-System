@@ -2,18 +2,26 @@ package main
 
 import (
 	buffer2 "fileIO/buffer"
-	"time"
+	"fmt"
+	"sync"
 )
 
 func main() {
 	fileName := "my-file.txt"
-	buffer, err := buffer2.NewBuffer(fileName)
-	if err != nil {
-		panic(err)
+	var wg sync.WaitGroup
+	for i := 0; i < 500; i++ {
+		buffer, err := buffer2.NewBuffer(fileName)
+		if err != nil {
+			panic(err)
+		}
+		defer buffer.Sync()
+
+		data := "\nDevansh Singhal"
+		byteData := []byte(data)
+		fmt.Println("Size of data: ", len(byteData))
+
+		wg.Add(1)
+		go buffer.Write(byteData, &wg)
 	}
-	defer buffer.Sync()
-	for i := 0; i < 1000; i++ {
-		go buffer.Write([]byte("\nDevansh Singhal"))
-	}
-	time.Sleep(100 * time.Millisecond)
+	wg.Wait()
 }

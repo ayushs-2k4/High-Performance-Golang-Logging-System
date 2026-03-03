@@ -2,14 +2,16 @@ package buffer
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"sync"
 )
 
-const MaxSize = 80
+const MaxSize = 8
 
 type Buffer struct {
-	file *os.File
-	data []byte
+	writer io.Writer
+	data   []byte
 }
 
 func NewBuffer(filename string) (*Buffer, error) {
@@ -19,18 +21,19 @@ func NewBuffer(filename string) (*Buffer, error) {
 	}
 
 	return &Buffer{
-		file: file,
-		data: nil,
+		writer: file,
+		data:   nil,
 	}, nil
 }
 
-func (b *Buffer) Write(data []byte) (bool, error) {
+func (b *Buffer) Write(data []byte, wg *sync.WaitGroup) (bool, error) {
 	b.data = append(b.data, data...)
 
 	if len(b.data) >= MaxSize {
 		b.Sync()
 	}
 
+	wg.Done()
 	return true, nil
 }
 
@@ -40,7 +43,7 @@ func (b *Buffer) Sync() error {
 		return nil
 	}
 
-	n, err := b.file.Write(b.data)
+	n, err := b.writer.Write(b.data)
 	if err != nil {
 		return err
 	}
@@ -51,5 +54,8 @@ func (b *Buffer) Sync() error {
 
 func (b *Buffer) Close() error {
 	b.Sync()
-	return b.file.Close()
+	if file, ok := b.writer.(*os.File); ok {
+		return file.Close()
+	}
+	return nil
 }
