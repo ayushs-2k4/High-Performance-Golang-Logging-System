@@ -1,41 +1,42 @@
 package main
 
 import (
-	buffer2 "fileIO/buffer"
+	"bufio"
 	"fmt"
-	"sync"
+	"os"
+	"time"
 )
 
 const channelSize = 2
 
 func main() {
-	fileName := "my-file.txt"
-	var wg sync.WaitGroup
-	buffer, err := buffer2.NewBuffer(fileName)
-	if err != nil {
-		panic(err)
-	}
-	defer buffer.Sync()
+	filename := "my-file.txt"
+	file, _ := os.OpenFile(filename, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+	buffer := bufio.NewWriter(file)
+	defer func() {
+		buffer.Flush()
+		file.Close()
+	}()
 
 	ch := make(chan []byte, channelSize)
 
-	for i := 0; i < 300; i++ {
-		data := fmt.Sprintf("\nDevansh Singhal, %d", i)
-		byteData := []byte(data)
-		wg.Add(1)
-		go func(b []byte) {
-			ch <- b
-			wg.Done()
-		}(byteData)
-	}
-
 	go func() {
-		wg.Wait()
+		for i := 0; i < 300; i++ {
+			data := fmt.Sprintf("\nDevansh Singhal, %d", i)
+			byteData := []byte(data)
+			fmt.Println("time: ", time.Now())
+			ch <- byteData
+		}
 		close(ch)
 	}()
 
 	for data := range ch {
+		fmt.Println("consumed ")
+		dataSize := len(data)
 		buffer.Write(data)
+		bufferSize := buffer.Buffered()
+		fmt.Println(fmt.Sprintf("bufferSize: %d bytes, written bytes: %d", bufferSize, dataSize))
+		time.Sleep(1 * time.Second)
 	}
 
 }
