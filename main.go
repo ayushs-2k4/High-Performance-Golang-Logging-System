@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+const channelSize = 2
+
 func main() {
 	fileName := "my-file.txt"
 	var wg sync.WaitGroup
@@ -15,16 +17,25 @@ func main() {
 	}
 	defer buffer.Sync()
 
-	data := "\nDevansh Singhal"
-	byteData := []byte(data)
-	fmt.Println("Size of data: ", len(byteData))
+	ch := make(chan []byte, channelSize)
 
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 300; i++ {
+		data := fmt.Sprintf("\nDevansh Singhal, %d", i)
+		byteData := []byte(data)
 		wg.Add(1)
-		go func() {
-			buffer.Write(byteData)
+		go func(b []byte) {
+			ch <- b
 			wg.Done()
-		}()
+		}(byteData)
 	}
-	wg.Wait()
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for data := range ch {
+		buffer.Write(data)
+	}
+
 }
