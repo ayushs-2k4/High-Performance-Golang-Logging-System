@@ -1,18 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"os"
 )
 
-type Buffer struct {
-	b []byte
-}
-
 func main() {
 	fileName := "my-file.txt"
+	buffer, err := NewBuffer(fileName)
+	if err != nil {
+		panic(err)
+	}
+	defer buffer.Sync()
 	for i := 0; i < 10; i++ {
-		writeToFile(fileName, Buffer{b: []byte("\nDevansh Singhal")})
+		buffer.Write([]byte("\nDevansh Singhal"))
 	}
 }
 
@@ -23,19 +23,4 @@ func createFileIfNotExists(filename string) (*os.File, error) {
 	}
 
 	return file, nil
-}
-
-func writeToFile(filename string, buffer Buffer) (bool, error) {
-	file, err := createFileIfNotExists(filename)
-	if err != nil || file == nil {
-		return false, err
-	}
-	defer file.Close()
-
-	n, err := file.Write(buffer.b)
-	if err != nil {
-		return false, err
-	}
-	fmt.Println(fmt.Sprintf("Written %d bytes", n))
-	return true, nil
 }
