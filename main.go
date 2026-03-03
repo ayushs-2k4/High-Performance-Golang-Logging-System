@@ -21,7 +21,10 @@ func main() {
 		fmt.Println("Size of data: ", len(byteData))
 
 		wg.Add(1)
-		go buffer.Write(byteData, &wg)
+		go func() {
+			buffer.Write(byteData)
+			wg.Done()
+		}()
 	}
 	wg.Wait()
 }

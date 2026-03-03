@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sync"
 )
 
 const MaxSize = 8
@@ -26,14 +25,13 @@ func NewBuffer(filename string) (*Buffer, error) {
 	}, nil
 }
 
-func (b *Buffer) Write(data []byte, wg *sync.WaitGroup) (bool, error) {
+func (b *Buffer) Write(data []byte) (bool, error) {
 	b.data = append(b.data, data...)
 
 	if len(b.data) >= MaxSize {
 		b.Sync()
 	}
 
-	wg.Done()
 	return true, nil
 }
 
