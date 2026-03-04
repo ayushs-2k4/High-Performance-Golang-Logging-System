@@ -89,6 +89,7 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 
 	j.addNewLine()
 	j.b = append(j.b, '}')
+	j.addNewLine()
 	j.currentLevel--
 
 	res := j.b
