@@ -3,7 +3,9 @@ package main
 import (
 	"fileIO/writer"
 	"fmt"
+	"reflect"
 	"testing"
+	"time"
 )
 
 func BenchmarkEncoderLogger(b *testing.B) {
@@ -95,9 +97,70 @@ func BenchmarkFileWriter(b *testing.B) {
 	fileWriter.Close()
 }
 
-// TestAllocsPerOperation measures exact heap allocations for each operation.
-// Run with: go test -v -run TestAllocsPerOperation
-func TestAllocsPerOperation(t *testing.T) {
+// TestJSONEncoderMethodAllocs measures allocs/op for each individual method of JSONEncoder.
+// Run with: go test -v -run TestJSONEncoderMethodAllocs
+func TestJSONEncoderMethodAllocs(t *testing.T) {
+	enc := NewJSONEncoder()
+
+	printAllocs := func(name string, n float64) {
+		fmt.Printf("%-40s %.0f allocs/op\n", name, n)
+	}
+
+	fmt.Println("--- JSONEncoder method-level allocs/op ---")
+
+	// addString
+	printAllocs("addString", testing.AllocsPerRun(100, func() {
+		enc.addString("hello-world")
+		enc.reset()
+	}))
+
+	// addInt
+	printAllocs("addInt", testing.AllocsPerRun(100, func() {
+		enc.addInt(12345)
+		enc.reset()
+	}))
+
+	// addCaller  (runtime.Caller + string concat)
+	printAllocs("addRawCaller", testing.AllocsPerRun(100, func() {
+		enc.addRawCaller()
+		enc.reset()
+	}))
+
+	// time.Now().UTC().Format  (isolated — the timestamp line in Encode)
+	printAllocs("time.Now().UTC().AppendFormat(enc.b, time.RFC3339Nano)", testing.AllocsPerRun(100, func() {
+		enc.b = time.Now().UTC().AppendFormat(enc.b, time.RFC3339Nano)
+		enc.reset()
+	}))
+
+	// addKeyValue with a string Value
+	printAllocs("addKeyValue (string)", testing.AllocsPerRun(100, func() {
+		enc.addKeyValue(KV{Key: "k", Value: &Value{val: "v", valType: reflect.String}})
+		enc.reset()
+	}))
+
+	// addKeyValue with an int64 Value
+	printAllocs("addKeyValue (int64)", testing.AllocsPerRun(100, func() {
+		enc.addKeyValue(KV{Key: "k", Value: &Value{val: int64(42), valType: reflect.Int64}})
+		enc.reset()
+	}))
+
+	// addStruct (flat struct — no nested struct)
+	type FlatStruct struct {
+		Name string
+		Age  int64
+	}
+	printAllocs("addStruct (flat)", testing.AllocsPerRun(100, func() {
+		enc.addStruct(FlatStruct{Name: "Ayush", Age: 22})
+		enc.reset()
+	}))
+
+	// addStruct (nested struct — like MyStruct with MyInfo inside)
+	printAllocs("addStruct (nested)", testing.AllocsPerRun(100, func() {
+		enc.addStruct(MyStruct{Name: "Ayush", Age: 22, MyInfo: MyInfo{Gender: "Male"}})
+		enc.reset()
+	}))
+
+	// Full Encode — with pool
 	rec := Record{
 		Message: "Ayush Singhal",
 		Level:   Warn,
@@ -105,54 +168,17 @@ func TestAllocsPerOperation(t *testing.T) {
 			AddString("my-key", "my-value"),
 			AddString("my-key-2", "my-value-2"),
 			AddInt("my-int-key", 34),
-			AddStruct("my-struct-key", MyStruct{
-				Name:   "Ayush",
-				Age:    22,
-				MyInfo: MyInfo{Gender: "Male"},
-			}),
+			AddStruct("my-struct-key", MyStruct{Name: "Ayush", Age: 22, MyInfo: MyInfo{Gender: "Male"}}),
 		},
 	}
-
-	// Measure allocs for Encode only
-	encodeAllocs := testing.AllocsPerRun(100, func() {
-		enc := _jsonPOOL.Get().(*JSONEncoder)
-		enc.Encode(rec)
-		_jsonPOOL.Put(enc)
-	})
-	fmt.Printf("Encode (pool):          %.0f allocs/op\n", encodeAllocs)
-
-	// Measure allocs for Encode WITHOUT pool
-	encodeNoPoolAllocs := testing.AllocsPerRun(100, func() {
-		enc := NewJSONEncoder()
-		enc.Encode(rec)
-	})
-	fmt.Printf("Encode (no pool):       %.0f allocs/op\n", encodeNoPoolAllocs)
-
-	// Measure allocs for multiWriter.Write
-	fileWriter := writer.NewFileWriter("bench.log")
-	multiWriter := writer.NewMultiWriter(fileWriter)
-	enc := _jsonPOOL.Get().(*JSONEncoder)
-	data, _ := enc.Encode(rec)
-	_jsonPOOL.Put(enc)
-
-	writeAllocs := testing.AllocsPerRun(100, func() {
-		multiWriter.Write(data)
-	})
-	fmt.Printf("MultiWriter.Write:      %.0f allocs/op\n", writeAllocs)
-
-	fileWriteAllocs := testing.AllocsPerRun(100, func() {
-		fileWriter.Write(data)
-	})
-	fmt.Printf("FileWriter.Write:       %.0f allocs/op\n", fileWriteAllocs)
-
-	// Measure allocs for the full pipeline (Encode + Write)
-	fullAllocs := testing.AllocsPerRun(100, func() {
+	fmt.Println()
+	printAllocs("Encode (with pool)", testing.AllocsPerRun(100, func() {
 		e := _jsonPOOL.Get().(*JSONEncoder)
-		d, _ := e.Encode(rec)
-		multiWriter.Write(d)
+		e.Encode(rec) //nolint:errcheck
 		_jsonPOOL.Put(e)
-	})
-	fmt.Printf("Full pipeline (pool):   %.0f allocs/op\n", fullAllocs)
-
-	multiWriter.Close()
+	}))
+	printAllocs("Encode (no pool)", testing.AllocsPerRun(100, func() {
+		e := NewJSONEncoder()
+		e.Encode(rec) //nolint:errcheck
+	}))
 }

@@ -66,15 +66,18 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.addCharacter(CommaCharacter)
 	j.addNewLine()
 	j.addTabs()
-	j.addKeyValue(KV{
-		Key: TimeStampKey,
-		Value: &Value{
-			val:     time.Now().UTC().Format(time.RFC3339Nano),
-			valType: reflect.String,
-		},
-	})
+	j.addKey(TimeStampKey)
+	j.addCharacter('"')
+	j.b = time.Now().UTC().AppendFormat(j.b, time.RFC3339Nano)
+	j.addCharacter('"')
 
-	j.addCaller()
+	j.addCharacter(CommaCharacter)
+	j.addNewLine()
+	j.addTabs()
+	j.addKey(CallerKey)
+	j.addCharacter('"')
+	j.addRawCaller()
+	j.addCharacter('"')
 
 	for _, kv := range rec.KVs {
 		key := kv.Key
@@ -122,11 +125,7 @@ func (j *JSONEncoder) addCharacter(c rune) {
 }
 
 func (j *JSONEncoder) addKeyValue(kv KV) {
-	j.addString(kv.Key)
-	j.b = append(j.b, ':')
-	if shouldPrettify {
-		j.b = append(j.b, ' ')
-	}
+	j.addKey(kv.Key)
 
 	switch kv.Value.valType {
 	case reflect.String:
@@ -137,6 +136,14 @@ func (j *JSONEncoder) addKeyValue(kv KV) {
 		j.addStruct(kv.Value.val)
 	}
 
+}
+
+func (j *JSONEncoder) addKey(key string) {
+	j.addString(key)
+	j.b = append(j.b, ':')
+	if shouldPrettify {
+		j.b = append(j.b, ' ')
+	}
 }
 
 func getLevelString(level Level) string {
@@ -227,7 +234,7 @@ func (j *JSONEncoder) reset() {
 	j.currentLevel = 0
 }
 
-func (j *JSONEncoder) addCaller() {
+func (j *JSONEncoder) addRawCaller() {
 	pc, file, line, ok := runtime.Caller(2)
 	if !ok {
 		return
