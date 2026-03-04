@@ -41,25 +41,34 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.addNewLine()
 	j.currentLevel++
 	j.addTabs()
-	j.addKeyValue(MessageKey, Value{
-		val:     rec.Message,
-		valType: reflect.String,
+	j.addKeyValue(KV{
+		Key: MessageKey,
+		Value: &Value{
+			val:     rec.Message,
+			valType: reflect.String,
+		},
 	})
 
 	j.addCharacter(CommaCharacter)
 	j.addNewLine()
 	j.addTabs()
-	j.addKeyValue(LevelKey, Value{
-		val:     getLevelString(rec.Level),
-		valType: reflect.String,
+	j.addKeyValue(KV{
+		Key: LevelKey,
+		Value: &Value{
+			val:     getLevelString(rec.Level),
+			valType: reflect.String,
+		},
 	})
 
 	j.addCharacter(CommaCharacter)
 	j.addNewLine()
 	j.addTabs()
-	j.addKeyValue(TimeStampKey, Value{
-		val:     time.Now().UnixMilli(),
-		valType: reflect.Int64,
+	j.addKeyValue(KV{
+		Key: TimeStampKey,
+		Value: &Value{
+			val:     time.Now().UnixMilli(),
+			valType: reflect.Int64,
+		},
 	})
 
 	for _, kv := range rec.KVs {
@@ -70,7 +79,11 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 		j.addNewLine()
 		j.addTabs()
 
-		j.addKeyValue(key, *val)
+		j.addKeyValue(KV{
+			Key:   key,
+			Value: val,
+		},
+		)
 
 	}
 
@@ -102,20 +115,20 @@ func (j *JSONEncoder) addCharacter(c rune) {
 	j.b = append(j.b, byte(c))
 }
 
-func (j *JSONEncoder) addKeyValue(key string, value Value) {
-	j.addString(key)
+func (j *JSONEncoder) addKeyValue(kv KV) {
+	j.addString(kv.Key)
 	j.b = append(j.b, ':')
 	if shouldPrettify {
 		j.b = append(j.b, ' ')
 	}
 
-	switch value.valType {
+	switch kv.Value.valType {
 	case reflect.String:
-		j.addString(value.val.(string))
+		j.addString(kv.Value.val.(string))
 	case reflect.Int64:
-		j.addInt(value.val.(int64))
+		j.addInt(kv.Value.val.(int64))
 	case reflect.Struct:
-		j.addStruct(value.val)
+		j.addStruct(kv.Value.val)
 	}
 
 }
@@ -165,21 +178,30 @@ func (j *JSONEncoder) addStruct(value any) {
 
 		switch fieldVal.Kind() {
 		case reflect.String:
-			j.addKeyValue(fieldTyp.Name, Value{
-				val:     fieldVal.String(),
-				valType: reflect.String,
+			j.addKeyValue(KV{
+				Key: fieldTyp.Name,
+				Value: &Value{
+					val:     fieldVal.String(),
+					valType: reflect.String,
+				},
 			})
 
 		case reflect.Int64:
-			j.addKeyValue(fieldTyp.Name, Value{
-				val:     fieldVal.Int(),
-				valType: reflect.Int64,
+			j.addKeyValue(KV{
+				Key: fieldTyp.Name,
+				Value: &Value{
+					val:     fieldVal.Int(),
+					valType: reflect.Int64,
+				},
 			})
 
 		case reflect.Struct:
-			j.addKeyValue(fieldTyp.Name, Value{
-				val:     fieldVal.Interface(),
-				valType: reflect.Struct,
+			j.addKeyValue(KV{
+				Key: fieldTyp.Name,
+				Value: &Value{
+					val:     fieldVal.Interface(),
+					valType: reflect.Struct,
+				},
 			})
 		}
 
