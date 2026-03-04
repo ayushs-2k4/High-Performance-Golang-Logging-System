@@ -74,16 +74,7 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 		},
 	})
 
-	j.addCharacter(CommaCharacter)
-	j.addNewLine()
-	j.addTabs()
-	j.addKeyValue(KV{
-		Key: CallerKey,
-		Value: &Value{
-			val:     caller(),
-			valType: reflect.String,
-		},
-	})
+	j.addCaller()
 
 	for _, kv := range rec.KVs {
 		key := kv.Key
@@ -236,10 +227,10 @@ func (j *JSONEncoder) reset() {
 	j.currentLevel = 0
 }
 
-func caller() string {
+func (j *JSONEncoder) addCaller() {
 	pc, file, line, ok := runtime.Caller(2)
 	if !ok {
-		return "unknown"
+		return
 	}
 
 	file = path.Base(file)
@@ -251,5 +242,9 @@ func caller() string {
 		funcName = path.Base(fn.Name())
 	}
 
-	return file + ":" + strconv.Itoa(line) + " " + funcName
+	j.b = append(j.b, file...)
+	j.b = append(j.b, ':')
+	j.b = strconv.AppendInt(j.b, int64(line), 10)
+	j.b = append(j.b, ' ')
+	j.b = append(j.b, funcName...)
 }
