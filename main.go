@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-const channelSize = 100
-
 func main() {
 	filename := "my-file.txt"
 	fileWriter := NewFileWriter(filename)

@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+const channelSize = 100
+
 type FileWriter struct {
 	file   *os.File
 	writer *bufio.Writer
