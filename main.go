@@ -25,15 +25,5 @@ func main() {
 
 	fmt.Println(time.Since(st))
 
-	time.Sleep(5 * time.Second)
-
-	for i := 0; i < 300; i++ {
-		data := fmt.Sprintf("Devansh Singhal, %d", i)
-		jsonEncoder := _jsonPOOL.Get().(*JSONEncoder)
-		encodedData, _ := jsonEncoder.Encode(data)
-		fmt.Println(fmt.Sprintf("producer 2: time: %s, i: %d", time.Now(), i))
-		fileWriter.Log(encodedData)
-	}
-
 	fileWriter.Close()
 }
