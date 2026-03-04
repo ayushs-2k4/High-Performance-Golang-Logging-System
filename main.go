@@ -17,7 +17,6 @@ func main() {
 		i := i
 		go func() {
 			data := fmt.Sprintf("\nDevansh Singhal, %d", i)
-			//jsonEncoder := NewJSONEncoder()
 			jsonEncoder := _jsonPOOL.Get().(*JSONEncoder)
 			encodedData, _ := jsonEncoder.Encode(data)
 			fileWriter.Log(encodedData)
