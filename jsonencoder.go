@@ -24,7 +24,5 @@ func (j *JSONEncoder) Encode(msg string) ([]byte, error) {
 	res := j.b
 	j.b = j.b[:0]
 
-	_jsonPOOL.Put(j)
-
 	return res, nil
 }

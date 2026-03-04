@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"sync"
 	"time"
 )
 
@@ -13,15 +15,22 @@ func main() {
 
 	st := time.Now()
 
-	for i := 0; i < 30000; i++ {
+	wg := sync.WaitGroup{}
+
+	for i := 0; i < 30000000; i++ {
 		i := i
+		wg.Add(1)
 		go func() {
-			data := fmt.Sprintf("\nAyush Singhal, %d", i)
+			defer wg.Done()
+			data := "\nAyush Singhal, " + strconv.Itoa(i)
 			jsonEncoder := _jsonPOOL.Get().(*JSONEncoder)
 			encodedData, _ := jsonEncoder.Encode(data)
 			fileWriter.Log(encodedData)
+			_jsonPOOL.Put(jsonEncoder)
 		}()
 	}
+
+	wg.Wait()
 
 	fmt.Println(time.Since(st))
 
