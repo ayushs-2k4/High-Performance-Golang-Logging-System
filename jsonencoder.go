@@ -1,7 +1,9 @@
 package main
 
 import (
+	"path"
 	"reflect"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -30,6 +32,7 @@ const (
 	MessageKey       = "message"
 	LevelKey         = "level"
 	TimeStampKey     = "timestamp"
+	CallerKey        = "caller"
 )
 
 const (
@@ -66,8 +69,19 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.addKeyValue(KV{
 		Key: TimeStampKey,
 		Value: &Value{
-			val:     time.Now().UnixMilli(),
-			valType: reflect.Int64,
+			val:     time.Now().UTC().Format(time.RFC3339Nano),
+			valType: reflect.String,
+		},
+	})
+
+	j.addCharacter(CommaCharacter)
+	j.addNewLine()
+	j.addTabs()
+	j.addKeyValue(KV{
+		Key: CallerKey,
+		Value: &Value{
+			val:     caller(),
+			valType: reflect.String,
 		},
 	})
 
@@ -220,4 +234,22 @@ func (j *JSONEncoder) addStruct(value any) {
 func (j *JSONEncoder) reset() {
 	j.b = j.b[:0]
 	j.currentLevel = 0
+}
+
+func caller() string {
+	pc, file, line, ok := runtime.Caller(2)
+	if !ok {
+		return "unknown"
+	}
+
+	file = path.Base(file)
+
+	fn := runtime.FuncForPC(pc)
+	funcName := "unknown"
+
+	if fn != nil {
+		funcName = path.Base(fn.Name())
+	}
+
+	return file + ":" + strconv.Itoa(line) + " " + funcName
 }
