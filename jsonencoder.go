@@ -48,7 +48,7 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 		Key: MessageKey,
 		Value: Value{
 			val:     rec.Message,
-			valType: reflect.String,
+			valType: StringType,
 		},
 	})
 
@@ -59,7 +59,7 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 		Key: LevelKey,
 		Value: Value{
 			val:     getLevelString(rec.Level),
-			valType: reflect.String,
+			valType: StringType,
 		},
 	})
 
@@ -128,11 +128,11 @@ func (j *JSONEncoder) addKeyValue(kv KV) {
 	j.addKey(kv.Key)
 
 	switch kv.Value.valType {
-	case reflect.String:
+	case StringType:
 		j.addString(kv.Value.val.(string))
-	case reflect.Int64:
+	case Int64Type:
 		j.addInt(kv.Value.val.(int64))
-	case reflect.Struct:
+	case StructType:
 		j.addStruct(kv.Value.val)
 	}
 
@@ -195,7 +195,7 @@ func (j *JSONEncoder) addStruct(value any) {
 				Key: fieldTyp.Name,
 				Value: Value{
 					val:     fieldVal.String(),
-					valType: reflect.String,
+					valType: StringType,
 				},
 			})
 
@@ -204,7 +204,7 @@ func (j *JSONEncoder) addStruct(value any) {
 				Key: fieldTyp.Name,
 				Value: Value{
 					val:     fieldVal.Int(),
-					valType: reflect.Int64,
+					valType: Int64Type,
 				},
 			})
 
@@ -213,7 +213,7 @@ func (j *JSONEncoder) addStruct(value any) {
 				Key: fieldTyp.Name,
 				Value: Value{
 					val:     fieldVal.Interface(),
-					valType: reflect.Struct,
+					valType: StructType,
 				},
 			})
 		}

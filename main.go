@@ -3,7 +3,6 @@ package main
 import (
 	"fileIO/writer"
 	"fmt"
-	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -31,15 +30,24 @@ type KV struct {
 
 type Value struct {
 	val     interface{}
-	valType reflect.Kind
+	valType ValueType
 }
+
+type ValueType uint8
+
+const (
+	StringType = iota
+	IntType
+	Int64Type
+	StructType
+)
 
 func AddString(key string, value string) KV {
 	return KV{
 		Key: key,
 		Value: Value{
 			val:     value,
-			valType: reflect.String,
+			valType: StringType,
 		},
 	}
 }
@@ -49,7 +57,7 @@ func AddInt(key string, value int64) KV {
 		Key: key,
 		Value: Value{
 			val:     value,
-			valType: reflect.Int64,
+			valType: Int64Type,
 		},
 	}
 }
@@ -59,7 +67,7 @@ func AddStruct(key string, value any) KV {
 		Key: key,
 		Value: Value{
 			val:     value,
-			valType: reflect.Struct,
+			valType: StructType,
 		},
 	}
 }
