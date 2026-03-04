@@ -37,7 +37,7 @@ const (
 
 const (
 	shouldPrettify      = true
-	shouldAddCallerInfo = true
+	shouldAddCallerInfo = false
 )
 
 func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
@@ -47,27 +47,12 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.addTabs()
 	j.addKeyValue(AddString(MessageKey, rec.Message))
 
-	j.addCharacter(CommaCharacter)
-	j.addNewLine()
-	j.addTabs()
-	j.addKeyValue(AddString(LevelKey, getLevelString(rec.Level)))
+	j.addLevel(rec)
 
-	j.addCharacter(CommaCharacter)
-	j.addNewLine()
-	j.addTabs()
-	j.addKey(TimeStampKey)
-	j.addCharacter('"')
-	j.b = time.Now().UTC().AppendFormat(j.b, time.RFC3339Nano)
-	j.addCharacter('"')
+	j.addTimestamp()
 
 	if shouldAddCallerInfo {
-		j.addCharacter(CommaCharacter)
-		j.addNewLine()
-		j.addTabs()
-		j.addKey(CallerKey)
-		j.addCharacter('"')
-		j.addRawCaller()
-		j.addCharacter('"')
+		j.addCallerInfo()
 	}
 
 	for _, kv := range rec.KVs {
@@ -95,6 +80,33 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.reset()
 
 	return res, nil
+}
+
+func (j *JSONEncoder) addLevel(rec Record) {
+	j.addCharacter(CommaCharacter)
+	j.addNewLine()
+	j.addTabs()
+	j.addKeyValue(AddString(LevelKey, getLevelString(rec.Level)))
+}
+
+func (j *JSONEncoder) addTimestamp() {
+	j.addCharacter(CommaCharacter)
+	j.addNewLine()
+	j.addTabs()
+	j.addKey(TimeStampKey)
+	j.addCharacter('"')
+	j.b = time.Now().UTC().AppendFormat(j.b, time.RFC3339Nano)
+	j.addCharacter('"')
+}
+
+func (j *JSONEncoder) addCallerInfo() {
+	j.addCharacter(CommaCharacter)
+	j.addNewLine()
+	j.addTabs()
+	j.addKey(CallerKey)
+	j.addCharacter('"')
+	j.addRawCaller()
+	j.addCharacter('"')
 }
 
 func (j *JSONEncoder) addNewLine() {
