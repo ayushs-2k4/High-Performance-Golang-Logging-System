@@ -12,6 +12,7 @@ import (
 )
 
 func BenchmarkEncoderWriter(b *testing.B) {
+	b.ReportAllocs()
 	fileWriter := writer.NewFileWriter("bench.log")
 	//consoleWriter := writer.NewConsoleWriter()
 	multiWriter := writer.NewMultiWriter(fileWriter)
@@ -48,6 +49,7 @@ func BenchmarkEncoderWriter(b *testing.B) {
 }
 
 func BenchmarkEncoder(b *testing.B) {
+	b.ReportAllocs()
 	rec := Record{
 		Message: "Ayush Singhal",
 		Level:   Warn,
@@ -67,6 +69,7 @@ func BenchmarkEncoder(b *testing.B) {
 }
 
 func BenchmarkFileWriter(b *testing.B) {
+	b.ReportAllocs()
 	fileWriter := writer.NewFileWriter("bench.log")
 
 	record := Record{
@@ -187,6 +190,7 @@ func TestJSONEncoderMethodAllocs(t *testing.T) {
 }
 
 func BenchmarkMyLogger10Fields(b *testing.B) {
+	b.ReportAllocs()
 	writer := &writer.DiscardWriter{}
 
 	b.ResetTimer()
@@ -219,6 +223,7 @@ func BenchmarkMyLogger10Fields(b *testing.B) {
 }
 
 func BenchmarkMyLogger10FieldsCreatingOnce(b *testing.B) {
+	b.ReportAllocs()
 	writer := &writer.DiscardWriter{}
 
 	b.ResetTimer()
@@ -252,6 +257,7 @@ func BenchmarkMyLogger10FieldsCreatingOnce(b *testing.B) {
 }
 
 func BenchmarkZap10Fields(b *testing.B) {
+	b.ReportAllocs()
 	encoderCfg := zap.NewProductionEncoderConfig()
 
 	encoder := zapcore.NewJSONEncoder(encoderCfg)
@@ -283,6 +289,7 @@ func BenchmarkZap10Fields(b *testing.B) {
 }
 
 func BenchmarkZap10FieldsCreatingOnce(b *testing.B) {
+	b.ReportAllocs()
 	encoderCfg := zap.NewProductionEncoderConfig()
 
 	encoder := zapcore.NewJSONEncoder(encoderCfg)
