@@ -44,24 +44,12 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.addNewLine()
 	j.currentLevel++
 	j.addTabs()
-	j.addKeyValue(KV{
-		Key: MessageKey,
-		Value: Value{
-			val:     rec.Message,
-			valType: StringType,
-		},
-	})
+	j.addKeyValue(AddString(MessageKey, rec.Message))
 
 	j.addCharacter(CommaCharacter)
 	j.addNewLine()
 	j.addTabs()
-	j.addKeyValue(KV{
-		Key: LevelKey,
-		Value: Value{
-			val:     getLevelString(rec.Level),
-			valType: StringType,
-		},
-	})
+	j.addKeyValue(AddString(LevelKey, getLevelString(rec.Level)))
 
 	j.addCharacter(CommaCharacter)
 	j.addNewLine()
@@ -127,13 +115,13 @@ func (j *JSONEncoder) addCharacter(c rune) {
 func (j *JSONEncoder) addKeyValue(kv KV) {
 	j.addKey(kv.Key)
 
-	switch kv.Value.valType {
+	switch kv.Value.ValType {
 	case StringType:
-		j.addString(kv.Value.val.(string))
+		j.addString(kv.Value.String)
 	case Int64Type:
-		j.addInt(kv.Value.val.(int64))
+		j.addInt(kv.Value.Int)
 	case StructType:
-		j.addStruct(kv.Value.val)
+		j.addStruct(kv.Value.Interface)
 	}
 
 }
@@ -191,31 +179,13 @@ func (j *JSONEncoder) addStruct(value any) {
 
 		switch fieldVal.Kind() {
 		case reflect.String:
-			j.addKeyValue(KV{
-				Key: fieldTyp.Name,
-				Value: Value{
-					val:     fieldVal.String(),
-					valType: StringType,
-				},
-			})
+			j.addKeyValue(AddString(fieldTyp.Name, fieldVal.String()))
 
 		case reflect.Int64:
-			j.addKeyValue(KV{
-				Key: fieldTyp.Name,
-				Value: Value{
-					val:     fieldVal.Int(),
-					valType: Int64Type,
-				},
-			})
+			j.addKeyValue(AddInt(fieldTyp.Name, fieldVal.Int()))
 
 		case reflect.Struct:
-			j.addKeyValue(KV{
-				Key: fieldTyp.Name,
-				Value: Value{
-					val:     fieldVal.Interface(),
-					valType: StructType,
-				},
-			})
+			j.addKeyValue(AddStruct(fieldTyp.Name, fieldVal.Interface()))
 		}
 
 		if i < val.NumField()-1 {

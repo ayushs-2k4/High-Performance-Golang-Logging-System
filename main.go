@@ -29,8 +29,10 @@ type KV struct {
 }
 
 type Value struct {
-	val     interface{}
-	valType ValueType
+	String    string
+	Int       int64
+	Interface interface{}
+	ValType   ValueType
 }
 
 type ValueType uint8
@@ -46,8 +48,8 @@ func AddString(key string, value string) KV {
 	return KV{
 		Key: key,
 		Value: Value{
-			val:     value,
-			valType: StringType,
+			String:  value,
+			ValType: StringType,
 		},
 	}
 }
@@ -56,8 +58,8 @@ func AddInt(key string, value int64) KV {
 	return KV{
 		Key: key,
 		Value: Value{
-			val:     value,
-			valType: Int64Type,
+			Int:     value,
+			ValType: Int64Type,
 		},
 	}
 }
@@ -66,8 +68,8 @@ func AddStruct(key string, value any) KV {
 	return KV{
 		Key: key,
 		Value: Value{
-			val:     value,
-			valType: StructType,
+			Interface: value,
+			ValType:   StructType,
 		},
 	}
 }

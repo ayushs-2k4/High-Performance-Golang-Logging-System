@@ -133,13 +133,13 @@ func TestJSONEncoderMethodAllocs(t *testing.T) {
 
 	// addKeyValue with a string Value
 	printAllocs("addKeyValue (string)", testing.AllocsPerRun(100, func() {
-		enc.addKeyValue(KV{Key: "k", Value: Value{val: "v", valType: StringType}})
+		enc.addKeyValue(AddString("k", "v"))
 		enc.reset()
 	}))
 
 	// addKeyValue with an int64 Value
 	printAllocs("addKeyValue (int64)", testing.AllocsPerRun(100, func() {
-		enc.addKeyValue(KV{Key: "k", Value: Value{val: int64(42), valType: Int64Type}})
+		enc.addKeyValue(AddInt("k", int64(42)))
 		enc.reset()
 	}))
 
