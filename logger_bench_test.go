@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func BenchmarkEncoderLogger(b *testing.B) {
+func BenchmarkEncoderWriter(b *testing.B) {
 	fileWriter := writer.NewFileWriter("bench.log")
 	//consoleWriter := writer.NewConsoleWriter()
 	multiWriter := writer.NewMultiWriter(fileWriter)
