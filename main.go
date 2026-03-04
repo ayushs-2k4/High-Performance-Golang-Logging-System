@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fileIO/writer"
 	"fmt"
 	"strconv"
 	"sync"
@@ -9,7 +10,7 @@ import (
 
 func main() {
 	filename := "my-file.txt"
-	fileWriter := NewFileWriter(filename)
+	fileWriter := writer.NewFileWriter(filename)
 
 	st := time.Now()
 

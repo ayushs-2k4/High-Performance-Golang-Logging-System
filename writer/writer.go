@@ -1,4 +1,4 @@
-package main
+package writer
 
 type Writer interface {
 	Write(b []byte)
