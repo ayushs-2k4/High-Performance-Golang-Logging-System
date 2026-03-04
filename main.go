@@ -26,7 +26,7 @@ type Record struct {
 
 type KV struct {
 	Key   string
-	Value *Value
+	Value Value
 }
 
 type Value struct {
@@ -37,7 +37,7 @@ type Value struct {
 func AddString(key string, value string) KV {
 	return KV{
 		Key: key,
-		Value: &Value{
+		Value: Value{
 			val:     value,
 			valType: reflect.String,
 		},
@@ -47,7 +47,7 @@ func AddString(key string, value string) KV {
 func AddInt(key string, value int64) KV {
 	return KV{
 		Key: key,
-		Value: &Value{
+		Value: Value{
 			val:     value,
 			valType: reflect.Int64,
 		},
@@ -57,7 +57,7 @@ func AddInt(key string, value int64) KV {
 func AddStruct(key string, value any) KV {
 	return KV{
 		Key: key,
-		Value: &Value{
+		Value: Value{
 			val:     value,
 			valType: reflect.Struct,
 		},
