@@ -1,5 +1,5 @@
 package main
 
 type Encoder interface {
-	Encode(msg string) ([]byte, error)
+	Encode(rec Record) ([]byte, error)
 }
