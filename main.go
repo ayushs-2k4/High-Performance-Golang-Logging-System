@@ -3,6 +3,7 @@ package main
 import (
 	"fileIO/writer"
 	"fmt"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -15,7 +16,32 @@ type Record struct {
 
 type KV struct {
 	Key   string
-	Value interface{}
+	Value *Value
+}
+
+type Value struct {
+	val     interface{}
+	valType reflect.Kind
+}
+
+func AddString(key string, value string) KV {
+	return KV{
+		Key: key,
+		Value: &Value{
+			val:     value,
+			valType: reflect.String,
+		},
+	}
+}
+
+func AddInt(key string, value int) KV {
+	return KV{
+		Key: key,
+		Value: &Value{
+			val:     value,
+			valType: reflect.Int,
+		},
+	}
 }
 
 func main() {
@@ -36,14 +62,9 @@ func main() {
 			record := Record{
 				Message: "Ayush Singhal, " + strconv.Itoa(i),
 				KVs: []KV{
-					{
-						Key:   "my-key",
-						Value: "my-value",
-					},
-					{
-						Key:   "my-key-2",
-						Value: "my-value-2",
-					},
+					AddString("my-key", "my-value"),
+					AddString("my-key-2", "my-value-2"),
+					AddInt("my-int-key", 34),
 				},
 			}
 			jsonEncoder := _jsonPOOL.Get().(*JSONEncoder)

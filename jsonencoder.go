@@ -1,6 +1,8 @@
 package main
 
 import (
+	"reflect"
+	"strconv"
 	"sync"
 )
 
@@ -28,16 +30,21 @@ func (j *JSONEncoder) Encode(rec Record) ([]byte, error) {
 	j.b = append(j.b, '{')
 	j.addCharacter(NewLineCharacter)
 	j.addCharacter(TabCharacter)
-	j.addKeyValue(MessageKey, rec.Message)
+	j.addKeyValue(MessageKey, Value{
+		val:     rec.Message,
+		valType: reflect.String,
+	})
 
 	for _, kv := range rec.KVs {
+		j.b = append(j.b, ',')
 		key := kv.Key
 		val := kv.Value
 
 		j.addCharacter(NewLineCharacter)
 		j.addCharacter(TabCharacter)
 
-		j.addKeyValue(key, val.(string))
+		j.addKeyValue(key, *val)
+
 	}
 
 	j.addCharacter(NewLineCharacter)
@@ -53,15 +60,26 @@ func (j *JSONEncoder) addCharacter(c rune) {
 	j.b = append(j.b, byte(c))
 }
 
-func (j *JSONEncoder) addKeyValue(key string, value string) {
+func (j *JSONEncoder) addKeyValue(key string, value Value) {
 	j.addString(key)
 	j.b = append(j.b, ':')
 	j.b = append(j.b, ' ')
-	j.addString(value)
+
+	switch value.valType {
+	case reflect.String:
+		j.addString(value.val.(string))
+	case reflect.Int:
+		j.addInt(value.val.(int))
+	}
+
 }
 
 func (j *JSONEncoder) addString(str string) {
 	j.b = append(j.b, '"')
-	j.b = append(j.b, []byte(str)...)
+	j.b = append(j.b, str...)
 	j.b = append(j.b, '"')
+}
+
+func (j *JSONEncoder) addInt(val int) {
+	j.b = strconv.AppendInt(j.b, int64(val), 10)
 }
