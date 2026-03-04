@@ -5,32 +5,32 @@ import (
 	"os"
 )
 
-type FileLogger struct {
+type FileWriter struct {
 	file   *os.File
 	writer *bufio.Writer
 	ch     chan []byte
 	done   chan struct{}
 }
 
-func NewFileLogger(filename string) *FileLogger {
+func NewFileWriter(filename string) *FileWriter {
 	file, _ := os.OpenFile(filename, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 	writer := bufio.NewWriter(file)
 
 	ch := make(chan []byte, channelSize)
 
-	fileLogger := &FileLogger{
+	fileWriter := &FileWriter{
 		file:   file,
 		writer: writer,
 		ch:     ch,
 		done:   make(chan struct{}),
 	}
 
-	go fileLogger.run()
+	go fileWriter.run()
 
-	return fileLogger
+	return fileWriter
 }
 
-func (f *FileLogger) run() {
+func (f *FileWriter) run() {
 	for msg := range f.ch {
 		f.writer.Write(msg)
 		//time.Sleep(100 * time.Millisecond)
@@ -43,11 +43,11 @@ func (f *FileLogger) run() {
 	close(f.done)
 }
 
-func (f *FileLogger) Log(b []byte) {
+func (f *FileWriter) Log(b []byte) {
 	f.ch <- b
 }
 
-func (f *FileLogger) Close() {
+func (f *FileWriter) Close() {
 	close(f.ch) // signal no more logs
 	<-f.done
 }

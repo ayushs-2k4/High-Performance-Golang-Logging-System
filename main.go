@@ -9,7 +9,7 @@ const channelSize = 100
 
 func main() {
 	filename := "my-file.txt"
-	fileLogger := NewFileLogger(filename)
+	fileWriter := NewFileWriter(filename)
 
 	st := time.Now()
 
@@ -20,7 +20,7 @@ func main() {
 			//jsonEncoder := NewJSONEncoder()
 			jsonEncoder := _jsonPOOL.Get().(*JSONEncoder)
 			encodedData, _ := jsonEncoder.Encode(data)
-			fileLogger.Log(encodedData)
+			fileWriter.Log(encodedData)
 		}()
 	}
 
@@ -33,8 +33,8 @@ func main() {
 		jsonEncoder := _jsonPOOL.Get().(*JSONEncoder)
 		encodedData, _ := jsonEncoder.Encode(data)
 		fmt.Println(fmt.Sprintf("producer 2: time: %s, i: %d", time.Now(), i))
-		fileLogger.Log(encodedData)
+		fileWriter.Log(encodedData)
 	}
 
-	fileLogger.Close()
+	fileWriter.Close()
 }
