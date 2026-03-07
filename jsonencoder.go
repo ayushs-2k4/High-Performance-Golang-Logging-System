@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math"
 	"path"
@@ -273,8 +272,7 @@ func (j *JSONEncoder) addReflectionValue(fieldVal reflect.Value, fieldTyp reflec
 		}
 
 	default:
-		k := reflect.TypeOf(fieldVal)
-		fmt.Println(k)
+		//fmt.Println("not implemented for:", fieldVal.Kind())
 	}
 }
 
