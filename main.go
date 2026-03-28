@@ -20,7 +20,7 @@ func main() {
 
 	wg := sync.WaitGroup{}
 
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 200; i++ {
 		i := i
 		wg.Add(1)
 		go func() {
@@ -114,6 +114,6 @@ func main() {
 		fmt.Println()
 		fmt.Println(time.Since(st))
 
-		multiWriter.Close()
 	}
+	multiWriter.Close()
 }
