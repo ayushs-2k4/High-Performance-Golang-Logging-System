@@ -35,7 +35,6 @@ func NewFileWriter(filename string) *FileWriter {
 func (f *FileWriter) run() {
 	for msg := range f.ch {
 		f.writer.Write(msg)
-		//time.Sleep(100 * time.Millisecond)
 	}
 
 	// channel closed → flush remaining data
